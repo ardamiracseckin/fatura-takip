@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Fatura Takipçisi</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2652/2652234.png">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface2: #16213e;
+            --accent: #e94560;
+            --accent2: #0f3460;
+            --green: #06d6a0;
+            --yellow: #ffd166;
+            --text: #e0e0f0;
+            --muted: #7a7a9a;
+            --border: #2a2a4a;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeDown .6s ease both;
+        }
+        header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #e94560, #ffd166);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            animation: fadeUp .5s ease both;
+        }
+        .card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Upload area */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            margin-bottom: 16px;
+        }
+        .upload-zone:hover { border-color: var(--accent); background: rgba(233,69,96,.05); }
+        .upload-zone input { display: none; }
+        .upload-zone .icon { font-size: 32px; margin-bottom: 8px; }
+        .upload-zone p { font-size: 13px; color: var(--muted); }
+
+        #preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        #loader {
+            display: none;
+            color: var(--yellow);
+            font-size: 13px;
+            margin: 10px 0;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        #result {
+            background: #0a0a14;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 11px;
+            height: 80px;
+            overflow-y: auto;
+            color: var(--muted);
+            white-space: pre-wrap;
+        }
+
+        /* Form */
+        .form-section {
+            display: none;
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+        .form-section label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .form-section input,
+        .form-section select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .form-section input:focus,
+        .form-section select:focus { border-color: var(--accent); }
+        .form-section select option { background: var(--surface2); }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity .2s, transform .1s;
+            letter-spacing: .3px;
+        }
+        .btn:hover { opacity: .85; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-green { background: var(--green); color: #0a0a14; }
+        .btn-yellow { background: var(--yellow); color: #0a0a14; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; margin-top: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th {
+            background: var(--surface2);
+            color: var(--muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+        td { padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,.02); }
+
+        .badge {
+            background: var(--accent2);
+            color: #8ab4f8;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .del-btn {
+            background: none;
+            border: 1px solid #3a2a3a;
+            color: #e94560;
+            border-radius: 6px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background .15s;
+        }
+        .del-btn:hover { background: rgba(233,69,96,.15); }
+
+        /* Chart */
+        .chart-container {
+            position: relative;
+            height: 270px;
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            animation: fadeUp .5s ease both;
+        }
+        .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .stat-card .value { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+        .stat-card .value.red { color: var(--accent); }
+        .stat-card .value.green { color: var(--green); }
+        .stat-card .value.yellow { color: var(--yellow); }
+
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>📊 Akıllı Fatura Takipçisi</h1>
+    <p>OCR · Otomatik Kategori · Excel Export · PWA</p>
+</header>
+
+<!-- İstatistik kartları -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="label">Toplam Gider</div>
+        <div class="value red" id="statTotal">₺0</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Kayıt Sayısı</div>
+        <div class="value yellow" id="statCount">0</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Ortalama</div>
+        <div class="value green" id="statAvg">₺0</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Sol: Fatura Ekle -->
+    <div class="card">
+        <h3>Yeni Fatura Ekle</h3>
+
+        <div class="upload-zone" onclick="document.getElementById('invoiceUpload').click()">
+            <input type="file" id="invoiceUpload" accept="image/*" capture="environment">
+            <div class="icon">📷</div>
+            <p>Fotoğraf çek veya dosya seç</p>
+        </div>
+
+        <img id="preview" alt="Önizleme">
+        <div id="loader">⏳ OCR işlemi yapılıyor...</div>
+        <div id="result">Görsel yüklenmedi.</div>
+
+        <div class="form-section" id="formSection">
+            <label>Firma Adı</label>
+            <input type="text" id="formCompany" placeholder="Otomatik çıkarıldı">
+
+            <label>Tarih</label>
+            <input type="date" id="formDate">
+
+            <label>Tutar (₺)</label>
+            <input type="number" step="0.01" id="formAmount" placeholder="0.00">
+
+            <label>Kategori</label>
+            <select id="formCategory">
+                <option value="Market">🛒 Market</option>
+                <option value="Yemek & Restoran">🍔 Yemek & Restoran</option>
+                <option value="Akaryakıt">⛽ Akaryakıt</option>
+                <option value="Fatura">💡 Fatura (Elektrik/Su/Gaz)</option>
+                <option value="Sağlık">💊 Sağlık & Eczane</option>
+                <option value="Ulaşım">🚌 Ulaşım</option>
+                <option value="Giyim">👗 Giyim</option>
+                <option value="Eğlence">🎮 Eğlence & Hobi</option>
+                <option value="Eğitim">📚 Eğitim</option>
+                <option value="Teknoloji">💻 Teknoloji</option>
+                <option value="Diğer">📦 Diğer</option>
+            </select>
+
+            <button class="btn btn-green" id="saveBtn" style="width:100%">✓ Kaydet</button>
+        </div>
+    </div>
+
+    <!-- Sağ: Grafik + Liste -->
+    <div>
+        <div class="card" style="margin-bottom:20px">
+            <h3>Kategori Dağılımı</h3>
+            <div class="chart-container">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Kayıtlı Giderler</h3>
+            <div class="btn-row">
+                <button class="btn btn-yellow" onclick="exportToExcel()">⬇ Excel (.xlsx)</button>
+                <button class="btn btn-ghost" onclick="exportToCSV()">⬇ CSV</button>
+                <button class="btn btn-ghost" onclick="clearLogs()" style="margin-left:auto">🗑 Tümünü Sil</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Firma</th>
+                            <th>Tarih</th>
+                            <th>Tutar</th>
+                            <th>Kategori</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsBody"></tbody>
+                </table>
+                <div id="emptyMsg" class="empty-msg">Henüz kayıt yok. Fatura ekle! 👆</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Kategori anahtar kelime eşlemesi ──────────────────────────────────────
+const CATEGORY_RULES = [
+    { category: 'Market',            keywords: ['migros','bim','a101','şok','carrefour','macro','hakmar','file','market','gida','gıda','süpermarket','bakkal'] },
+    { category: 'Yemek & Restoran',  keywords: ['burger','kfc','mcdonald','domino','pizza','restoran','cafe','kahve','starbucks','popeye','komagene','yemek','köfte','döner','sushi','pide','lahmacun','çorba'] },
+    { category: 'Akaryakıt',         keywords: ['petrol','opet','shell','bp','total','aytemiz','lukoil','yakıt','akaryakıt','benzin','motorin'] },
+    { category: 'Fatura',            keywords: ['elektrik','su ','doğalgaz','doğal gaz','telekom','türk telekom','vodafone','turkcell','ttech','tedaş','igdaş','iski','bedaş','fatura'] },
+    { category: 'Sağlık',            keywords: ['eczane','pharmacy','hastane','klinik','doktor','ilaç','serum','medikal','grida','hekim'] },
+    { category: 'Ulaşım',            keywords: ['taksi','uber','bitaksi','otogar','otobus','metro','tren','bilet','istanbulkart','İett','aktarma','havas'] },
+    { category: 'Giyim',             keywords: ['zara','h&m','lcw','koton','mavi','bershka','stradivarius','defacto','adidas','nike','giyim','tekstil'] },
+    { category: 'Eğlence',           keywords: ['sinema','cgv','cinemaximum','netflix','spotify','steam','valorant','oyun','tiyatro','konser','müze'] },
+    { category: 'Teknoloji',         keywords: ['teknosa','media markt','vatan','apple','samsung','bilgisayar','laptop','tablet','telefon','aksesuvar'] },
+    { category: 'Eğitim',            keywords: ['okul','üniversite','kurs','dershane','udemy','kitap','kırtasiye','kalem','defter'] },
+];
+
+function detectCategory(text) {
+    const lower = text.toLowerCase();
+    for (const rule of CATEGORY_RULES) {
+        if (rule.keywords.some(k => lower.includes(k))) return rule.category;
+    }
+    return 'Diğer';
+}
+
+// ── OCR ──────────────────────────────────────────────────────────────────
+const fileInput  = document.getElementById('invoiceUpload');
+const previewImg = document.getElementById('preview');
+const resultDiv  = document.getElementById('result');
+const loader     = document.getElementById('loader');
+const formSection = document.getElementById('formSection');
+let myChart = null;
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => { previewImg.src = ev.target.result; previewImg.style.display = 'block'; };
+    reader.readAsDataURL(file);
+
+    resultDiv.textContent = 'Metin okunuyor...';
+    loader.style.display = 'block';
+    formSection.style.display = 'none';
+
+    try {
+        const { data: { text } } = await Tesseract.recognize(file, 'tur+eng');
+        resultDiv.textContent = text || 'Metin bulunamadı.';
+        fillForm(text);
+    } catch (err) {
+        resultDiv.textContent = 'OCR hatası: ' + err.message;
+    } finally {
+        loader.style.display = 'none';
+    }
+});
+
+function fillForm(text) {
+    // Tarih
+    const dateMatch = text.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})\b/);
+    if (dateMatch) {
+        const [, d, m, y] = dateMatch;
+        document.getElementById('formDate').value = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    } else {
+        document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    // Tutar — TOPLAM, GENEL TOPLAM, TOP satırlarına öncelik ver
+    const amountMatch = text.match(/(?:TOPLAM|GENEL\s*TOPLAM|T[O0]PLAM|TAX\s*TOT)\s*[:\*]?\s*\*?\s*(\d[\d.,]+)/i)
+                     || text.match(/(\d{1,6}[.,]\d{2})\s*(?:TL|₺|TRY)/i);
+    document.getElementById('formAmount').value = amountMatch
+        ? parseFloat(amountMatch[1].replace(',', '.'))
+        : '';
+
+    // Firma — ilk anlamlı satır
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+    document.getElementById('formCompany').value = lines[0] || 'Bilinmiyor';
+
+    // Kategori dropdown — otomatik seç
+    const cat = detectCategory(text);
+    const sel = document.getElementById('formCategory');
+    for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === cat) { sel.selectedIndex = i; break; }
+    }
+
+    formSection.style.display = 'block';
+}
+
+// ── Kayıt ─────────────────────────────────────────────────────────────────
+document.getElementById('saveBtn').addEventListener('click', () => {
+    const tutar = parseFloat(document.getElementById('formAmount').value);
+    if (!tutar || isNaN(tutar)) { alert('Tutar giriniz!'); return; }
+
+    const record = {
+        id: Date.now(),
+        firma: document.getElementById('formCompany').value || 'Bilinmiyor',
+        tarih: document.getElementById('formDate').value,
+        tutar,
+        kategori: document.getElementById('formCategory').value,
+    };
+
+    const records = getRecords();
+    records.push(record);
+    saveRecords(records);
+    updateDashboard();
+    formSection.style.display = 'none';
+    previewImg.style.display = 'none';
+    resultDiv.textContent = 'Görsel yüklenmedi.';
+    fileInput.value = '';
+    alert('✅ Gider kaydedildi!');
+});
+
+// ── Storage ───────────────────────────────────────────────────────────────
+const getRecords = () => JSON.parse(localStorage.getItem('expenses') || '[]');
+const saveRecords = (r) => localStorage.setItem('expenses', JSON.stringify(r));
+
+function deleteRecord(id) {
+    if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
+    saveRecords(getRecords().filter(r => r.id !== id));
+    updateDashboard();
+}
+
+function clearLogs() {
+    if (!confirm('Tüm kayıtları silmek istediğinize emin misiniz?')) return;
+    localStorage.removeItem('expenses');
+    updateDashboard();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────
+function updateDashboard() {
+    const records = getRecords();
+
+    // Stats
+    const total = records.reduce((s, r) => s + r.tutar, 0);
+    const avg = records.length ? total / records.length : 0;
+    document.getElementById('statTotal').textContent = '₺' + total.toFixed(2);
+    document.getElementById('statCount').textContent = records.length;
+    document.getElementById('statAvg').textContent = '₺' + avg.toFixed(2);
+
+    // Table
+    const tbody = document.getElementById('logsBody');
+    const empty = document.getElementById('emptyMsg');
+    tbody.innerHTML = '';
+    empty.style.display = records.length ? 'none' : 'block';
+
+    [...records].reverse().forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.firma}</td>
+            <td>${r.tarih || '—'}</td>
+            <td style="color:var(--yellow);font-weight:500">₺${r.tutar.toFixed(2)}</td>
+            <td><span class="badge">${r.kategori}</span></td>
+            <td><button class="del-btn" onclick="deleteRecord(${r.id})">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Chart
+    const totals = {};
+    records.forEach(r => { totals[r.kategori] = (totals[r.kategori] || 0) + r.tutar; });
+    const labels = Object.keys(totals);
+    const values = Object.values(totals);
+    const colors = ['#e94560','#06d6a0','#ffd166','#0f3460','#a8dadc','#457b9d','#e63946','#2a9d8f','#f4a261','#264653','#e9c46a'];
+
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    if (myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels.length ? labels : ['Henüz veri yok'],
+            datasets: [{
+                data: values.length ? values : [1],
+                backgroundColor: colors.slice(0, Math.max(labels.length, 1)),
+                borderWidth: 2,
+                borderColor: '#0f0f1a',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#7a7a9a', font: { family: 'DM Mono', size: 11 }, padding: 12 } },
+                tooltip: { callbacks: { label: ctx => ` ₺${ctx.parsed.toFixed(2)}` } }
+            },
+            cutout: '60%',
+        }
+    });
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+function exportToExcel() {
+    const records = getRecords();
+    if (!records.length) { alert('Dışa aktarılacak veri bulunamadı!'); return; }
+
+    const wsData = [
+        ['Firma Adı', 'Tarih', 'Tutar (₺)', 'Kategori'],
+        ...records.map(r => [r.firma, r.tarih, r.tutar, r.kategori])
+    ];
+
+    // Toplam satırı
+    wsData.push(['', 'TOPLAM', records.reduce((s,r)=>s+r.tutar,0).toFixed(2), '']);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Sütun genişlikleri
+    ws['!cols'] = [{ wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 22 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Giderler');
+
+    const tarih = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+    XLSX.writeFile(wb, `Gider_Raporu_${tarih}.xlsx`);
+}
+
+function exportToCSV() {
+    const records = getRecords();
+    if (!records.length) { alert('Dışa aktarılacak veri bulunamadı!'); return; }
+    let csv = 'data:text/csv;charset=utf-8,\uFEFF';
+    csv += 'Firma Adı,Tarih,Tutar (₺),Kategori\n';
+    records.forEach(r => { csv += `"${r.firma}","${r.tarih}","${r.tutar}","${r.kategori}"\n`; });
+    const link = document.createElement('a');
+    link.href = encodeURI(csv);
+    link.download = 'Gider_Raporu.csv';
+    link.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+updateDashboard();
+</script>
+</body>
+</html>

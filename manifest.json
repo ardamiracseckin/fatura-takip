@@ -1,0 +1,21 @@
+{
+    "short_name": "FaturaTakip",
+    "name": "Akıllı Fatura ve Gider Takipçisi",
+    "icons": [
+      {
+        "src": "https://cdn-icons-png.flaticon.com/512/2652/2652234.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "https://cdn-icons-png.flaticon.com/512/2652/2652234.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ],
+    "start_url": "./index.html",
+    "background_color": "#f8f9fa",
+    "theme_color": "#0d6efd",
+    "display": "standalone",
+    "orientation": "portrait"
+  }
