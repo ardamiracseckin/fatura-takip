@@ -2,7 +2,7 @@
 
 Faturalarınızı fotoğraflayın, veriler otomatik çıkarılsın, harcamalarınızı takip edin.
 
-🔗 **Canlı Demo:** [ardamiracseckin.github.io/fatura-takip](https://ardamiracseckin.github.io/fatura-takip)
+🔗 **Canlı Demo:** [fatura-takip-one.vercel.app](https://fatura-takip-one.vercel.app)
 
 ---
 
@@ -78,3 +78,11 @@ fatura-takip/
 ## 📄 Lisans
 
 MIT License — dilediğiniz gibi kullanabilirsiniz.
+
+---
+
+## ☁️ Backend
+
+- **Firebase Authentication** — Google ile giriş
+- **Cloud Firestore** — Veriler bulutta, tüm cihazlardan erişilebilir
+- **Vercel** — Otomatik deploy, GitHub'a push edince güncellenir
