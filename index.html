@@ -185,12 +185,56 @@
                 const q = query(colRef, orderBy('createdAt', 'desc'));
                 const snap = await getDocs(q);
                 const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderDashboard(records);
+                window._allRecords = records;
+                populateYears(records);
+                applyFilter();
             } catch(e) {
                 console.error(e);
             }
             setSyncing(false);
         }
+
+        function populateYears(records) {
+            const years = [...new Set(records.map(r => r.tarih?.split('-')[0]).filter(Boolean))].sort().reverse();
+            const sel = document.getElementById('filterYear');
+            const current = sel.value;
+            sel.innerHTML = '<option value="">Tüm Yıllar</option>';
+            years.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                if (y === current) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        window.applyFilter = () => {
+            const month = document.getElementById('filterMonth').value;
+            const year  = document.getElementById('filterYear').value;
+            const cat   = document.getElementById('filterCategory').value;
+            const all   = window._allRecords || [];
+            const filtered = all.filter(r => {
+                const [ry, rm] = (r.tarih || '').split('-');
+                if (month && rm !== month) return false;
+                if (year  && ry !== year)  return false;
+                if (cat   && r.kategori !== cat) return false;
+                return true;
+            });
+            const info = document.getElementById('filterInfo');
+            if (month || year || cat) {
+                info.textContent = filtered.length + ' kayit · ₺' + filtered.reduce((s,r)=>s+r.tutar,0).toFixed(2);
+            } else {
+                info.textContent = '';
+            }
+            renderDashboard(filtered);
+        };
+
+        window.resetFilter = () => {
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterYear').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterInfo').textContent = '';
+            renderDashboard(window._allRecords || []);
+        };
 
         window.saveRecord = async () => {
             const tutar = parseFloat(document.getElementById('formAmount').value);
@@ -264,7 +308,7 @@
                 tbody.appendChild(tr);
             });
 
-            // Excel export datası için global'e kaydet
+            // Excel export datası için global'e kaydet (filtrelenmiş)
             window._records = records;
 
             // Chart
@@ -371,6 +415,45 @@
             </div>
             <div class="card">
                 <h3>Kayıtlı Giderler</h3>
+
+                <!-- Filtre satırı -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+                    <select id="filterMonth" onchange="applyFilter()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+                        <option value="">Tüm Aylar</option>
+                        <option value="01">Ocak</option>
+                        <option value="02">Şubat</option>
+                        <option value="03">Mart</option>
+                        <option value="04">Nisan</option>
+                        <option value="05">Mayıs</option>
+                        <option value="06">Haziran</option>
+                        <option value="07">Temmuz</option>
+                        <option value="08">Ağustos</option>
+                        <option value="09">Eylül</option>
+                        <option value="10">Ekim</option>
+                        <option value="11">Kasım</option>
+                        <option value="12">Aralık</option>
+                    </select>
+                    <select id="filterYear" onchange="applyFilter()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+                        <option value="">Tüm Yıllar</option>
+                    </select>
+                    <select id="filterCategory" onchange="applyFilter()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+                        <option value="">Tüm Kategoriler</option>
+                        <option value="Market">🛒 Market</option>
+                        <option value="Yemek & Restoran">🍔 Yemek</option>
+                        <option value="Akaryakıt">⛽ Akaryakıt</option>
+                        <option value="Fatura">💡 Fatura</option>
+                        <option value="Sağlık">💊 Sağlık</option>
+                        <option value="Ulaşım">🚌 Ulaşım</option>
+                        <option value="Giyim">👗 Giyim</option>
+                        <option value="Eğlence">🎮 Eğlence</option>
+                        <option value="Eğitim">📚 Eğitim</option>
+                        <option value="Teknoloji">💻 Teknoloji</option>
+                        <option value="Diğer">📦 Diğer</option>
+                    </select>
+                    <button class="btn btn-ghost" onclick="resetFilter()" style="font-size:11px;padding:8px 12px;">✕ Sıfırla</button>
+                    <span id="filterInfo" style="font-size:11px;color:var(--muted);margin-left:auto;"></span>
+                </div>
+
                 <div class="btn-row">
                     <button class="btn btn-yellow" onclick="exportToExcel()">⬇ Excel</button>
                     <button class="btn btn-ghost" onclick="exportToCSV()">⬇ CSV</button>
