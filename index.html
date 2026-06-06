@@ -1,3 +1,539 @@
+
+Claude finished the response
+ocr proje fikri verebilir misin ?
+
+00:24
+İşte ilginç OCR proje fikirleri:
+
+🔤 Başlangıç Seviye
+Fatura/Makbuz Tarayıcı – Fotoğraftan tutar, tarih ve firma adını otomatik çıkar
+Kartvizit Okuyucu – Kartvizit fotoğrafından kişiyi rehbere ekle
+Kitap Sayfası Dijitalleştirici – Eski kitapları tarayıp düzenlenebilir metne çevir
+⚙️ Orta Seviye
+Sınav Kağıdı Otomatik Değerlendirici – El yazısı cevapları okuyup puanla
+Reçete Okuyucu – Doktor el yazısını metne çevirip ilaç veritabanıyla eşleştir
+Plakalı Park Takip Sistemi – Kamera görüntüsünden araç plakasını tanı
+Tarihi Belge Arşivleyici – Osmanlıca/eski Türkçe belgeler için özel OCR
+🚀 İleri Seviye
+Akıllı Form Doldurma Robotu – Taranan formdaki verileri otomatik sisteme işle
+Çok Dilli Etiket Çevirici – Ürün etiketini çek, OCR + çeviri yap
+Finansal Rapor Analizörü – PDF/taranmış raporlardan tablo ve grafik verilerini çıkar
+Doküman Soru-Cevap Botu – Yüklenen belgeyi OCR'la tara, Claude API ile soru cevapla
+💡 En Popüler Öneri
+"Akıllı Fatura/Gider Takipçisi" — Kullanıcı fatura fotoğrafı çeker, OCR ile veriler okunur, kategorize edilip aylık rapor çıkarılır. Hem pratik hem portfolio için güçlü bir proje.
+
+Hangi alan ilgini çekiyor? Teknik stack veya detaylı yol haritası hazırlayayım.
+
+akıllı fatura/gider takipçisi fikrini beğendim
+
+00:26
+Harika seçim! Birkaç şeyi netleştirelim:
+
+Q: Hangi platformda çalışsın?
+A: hepsi
+
+Q: Teknik seviyeni nasıl tanımlarsın?
+A: Başlangıç
+
+Q: Hangi özellikler olsun? (Select all that apply)
+A: OCR ile fatura okuma, Kategori otomatik tespiti, Aylık/haftalık rapor, Grafik & dashboard, Dışa aktar (Excel/PDF)
+
+00:27
+Harika! Tüm özellikleri kapsayan kapsamlı bir proje. Başlangıç seviyesine uygun, adım adım bir yol haritası hazırlayayım.
+
+
+
+İşte projenin tam yol haritası! Her aşamaya tıklayarak o adımın detaylı rehberini isteyebilirsin.
+
+Kullanacağın teknolojiler:
+
+OCR: Tesseract.js — tamamen ücretsiz, tarayıcıda çalışır
+AI kategori tespiti: Claude API — fatura metnini okuyup otomatik kategorilendirir
+Grafikler: Chart.js — kolay ve güçlü
+Excel dışa aktarım: SheetJS
+PDF: jsPDF
+Mobil/masaüstü: PWA (Progressive Web App) — tek kod, her platform
+Başlangıç için öneri: Aşama 1'e tıkla, sana adım adım kodlu bir rehber yazayım. Hangi aşamadan başlamak istersin?
+
+Web uygulamasından Excel ve PDF dışa aktarımı nasıl yapabilirim? SheetJS ve jsPDF örnek verir misin?
+
+00:28
+
+Check frontend design skill
+Check frontend design skill
+Sana hem SheetJS hem jsPDF'i gösteren, gerçek çalışan örnek bir uygulama yapayım.
+
+Claude's response was interrupted.
+Akıllı fatura takipçisi için OCR kurulumu nasıl yapılır? Tesseract veya Google Vision API önerir misin?
+
+00:28
+İkisini karşılaştırayım, sonra sana uygun olanı seçelim.
+
+Tesseract.js vs Google Vision API
+Tesseract.js — tarayıcıda çalışır, ücretsiz, kurulumu 5 dakika. Türkçe desteği var ama el yazısı ve düşük kaliteli fotoğraflarda zorlanır.
+
+Google Vision API — çok daha güçlü OCR, her koşulda çalışır, ama ücretli (ayda 1000 istek ücretsiz) ve API anahtarı gerekir.
+
+Başlangıç seviyesi için Tesseract.js kesinlikle öneririm. Ücretsiz, backend gerektirmez, sonuçlar proje için yeterince iyi.
+
+Tesseract.js Kurulumu — Adım Adım
+1. HTML dosyası oluştur
+html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fatura OCR</title>
+</head>
+<body>
+  <input type="file" id="dosya" accept="image/*">
+  <div id="sonuc"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+2. app.js — OCR kodu
+javascript
+document.getElementById('dosya').addEventListener('change', async (e) => {
+  const dosya = e.target.files[0];
+  if (!dosya) return;
+
+  document.getElementById('sonuc').textContent = 'Okunuyor...';
+
+  const { data: { text } } = await Tesseract.recognize(
+    dosya,
+    'tur+eng',  // Türkçe + İngilizce
+    {
+      logger: (m) => console.log(m)  // İlerlemeyi konsola yaz
+    }
+  );
+
+  document.getElementById('sonuc').textContent = text;
+  console.log('Ham metin:', text);
+});
+3. Metinden veri çıkar (regex)
+OCR'dan gelen ham metni işleyip tutar, tarih ve firma adını ayıkla:
+
+javascript
+function faturaVerisiCikar(text) {
+  // Tutar: 1.250,00 TL veya 250.00 TRY formatları
+  const tutarRegex = /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))\s*(TL|TRY|₺)?/gi;
+  const tutarlar = [...text.matchAll(tutarRegex)];
+  const tutar = tutarlar.length > 0 ? tutarlar[tutarlar.length - 1][1] : null;
+
+  // Tarih: 01/05/2024 veya 01.05.2024 veya 2024-05-01
+  const tarihRegex = /(\d{1,2}[.\/\-]\d{1,2}[.\/\-]\d{2,4})/g;
+  const tarih = text.match(tarihRegex)?.[0] || null;
+
+  // İlk satırı firma adı olarak al
+  const satirlar = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const firma = satirlar[0] || null;
+
+  return { tutar, tarih, firma };
+}
+4. Hepsini birleştir
+javascript
+document.getElementById('dosya').addEventListener('change', async (e) => {
+  const dosya = e.target.files[0];
+  if (!dosya) return;
+
+  // Görseli önizle
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('onizleme').src = ev.target.result;
+  };
+  reader.readAsDataURL(dosya);
+
+  document.getElementById('sonuc').textContent = 'OCR çalışıyor...';
+
+  const { data: { text } } = await Tesseract.recognize(dosya, 'tur+eng');
+
+  const veri = faturaVerisiCikar(text);
+
+  document.getElementById('sonuc').innerHTML = `
+    <p><strong>Firma:</strong> ${veri.firma || 'Bulunamadı'}</p>
+    <p><strong>Tutar:</strong> ${veri.tutar || 'Bulunamadı'} TL</p>
+    <p><strong>Tarih:</strong> ${veri.tarih || 'Bulunamadı'}</p>
+  `;
+});
+Sonuçları İyileştirme İpuçları
+Tesseract bazen hatalı okuyabilir. Bunu azaltmak için fotoğraf kalitesini yüksek tut, faturayı düz ve iyi aydınlatılmış çek. Kod tarafında şunu ekleyebilirsin:
+
+javascript
+// Tesseract ayarları ile doğruluk artırılır
+const { data: { text } } = await Tesseract.recognize(dosya, 'tur+eng', {
+  tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÇçĞğİıÖöŞşÜü.,/-: ',
+});
+Sıradaki Adım
+OCR çalıştıktan sonra çıkan metni Claude API'ye gönderip kategori tespiti yaptırabilirsin — regex'ten çok daha akıllı sonuçlar verir:
+
+javascript
+// OCR metni Claude'a gönder
+const kategori = await claudeKategoriTespit(text);
+// → "Yiyecek & İçecek", "Ulaşım", "Fatura" gibi döner
+Bu adımı da ister misin? Yoksa şimdi dashboard & grafik (Aşama 3) veya dışa aktarım (Aşama 4) tarafına geçelim mi?
+
+
+manifest.json
+21 lines
+
+json
+
+
+sw.js
+26 lines
+
+js
+
+
+index.html
+341 lines
+
+html
+
+proje böyle oldu nasıl sence eksikleri varsa beraber yapalım
+
+02:16
+Projeye baktım, güzel bir temel kurmuşsun! Çalışan OCR, grafik, PWA ve CSV export var. Şimdi neleri geliştirebiliriz:
+
+Mevcut Eksikler:
+
+Excel export yok (sadece CSV var, gerçek .xlsx değil)
+PDF raporu yok
+Tarih sütunu tabloda görünmüyor
+Gider silme butonu yok (sadece "Tümünü Sil" var)
+Aylık/haftalık filtreleme yok
+Claude API ile akıllı kategori tespiti yok (sadece regex var)
+Hangilerinden başlayalım?
+
+Q: Önce hangi eksikleri kapatalım? (Select all that apply)
+A: Gerçek Excel (.xlsx) export, Gider silme & tarih sütunu, kategorileştirmeyi claude apı kullanmadan daha kolay bir yoldan yapmak
+
+02:17
+Güzel seçimler! Hepsini ekleyip güncellenmiş dosyayı hazırlayayım.
+
+
+Viewed a file, ran a command
+Viewed a file, ran a command
+Şimdi 3 değişikliği uygulayacağım:
+
+Gerçek .xlsx export — SheetJS kütüphanesi
+Tarih sütunu + satır bazlı silme butonu
+Kategori tespiti — anahtar kelime listesini genişletip dropdown yapacağım (API'siz, çok daha kolay)
+
+Ran 2 commands, read a file
+Ran 2 commands, read a file
+İşte güncellenmiş proje! Yapılan değişiklikler:
+
+✅ Gerçek Excel (.xlsx) export SheetJS kütüphanesi eklendi. "Excel (.xlsx)" butonuna basınca otomatik sütun genişlikleri ve toplam satırıyla gerçek bir .xlsx dosyası iniyor.
+
+✅ Tarih sütunu + satır bazlı silme Tabloya tarih sütunu eklendi. Her satırın yanında ✕ butonu var, tek tek kayıt silebilirsin.
+
+✅ Daha akıllı API'siz kategori tespiti Regex yerine şimdi 10 kategori × 10+ anahtar kelime kuralı var (market zincirleri, akaryakıt markaları, yemek zincirleri, sağlık, ulaşım vb.). OCR metni tarandığında en uygun kategori dropdown'da otomatik seçili geliyor, istersen değiştirebilirsin.
+
+Bonus: Tasarım da tamamen yenilendi — dark theme, istatistik kartları (toplam/sayı/ortalama), doughnut grafik.
+
+Başka geliştirmek istediğin bir şey var mı?
+
+
+Index
+Code · HTML 
+
+Manifest
+Code · JSON 
+
+Sw
+JS 
+nasıl çalıştıracağım kodumu
+
+02:23
+En basit yol: dosyaları bir klasöre koy ve tarayıcıda aç.
+
+Adım Adım
+1. Klasör oluştur Masaüstünde fatura-takip adında bir klasör oluştur.
+
+2. Dosyaları koy İndirdiğin 3 dosyayı (index.html, manifest.json, sw.js) bu klasöre taşı.
+
+3. Çalıştır index.html dosyasına çift tıkla → tarayıcıda açılır.
+
+⚠️ Önemli Not
+OCR (Tesseract.js) ve PWA özellikleri file:// protokolünde tam çalışmayabilir. Bunun için basit bir yerel sunucu açman gerekiyor:
+
+VS Code varsa (en kolay yol):
+
+Klasörü VS Code'da aç
+Live Server eklentisini yükle
+index.html'e sağ tıkla → "Open with Live Server"
+http://localhost:5500 adresinde açılır ✅
+VS Code yoksa, terminalde şunu çalıştır:
+
+bash
+# Python varsa (genellikle yüklüdür)
+cd masaüstü/fatura-takip
+python -m http.server 8000
+Sonra tarayıcıda http://localhost:8000 aç.
+
+Bilgisayarında VS Code var mı? Yoksa hangi işletim sistemi kullanıyorsun, ona göre en kolay yolu göstereyim.
+
+bu güzel de  indirmesi yok uygulama olarak
+
+02:26
+PWA özelliği zaten kodunda var! Sorun şu: file:// veya localhost üzerinden açınca tarayıcı PWA kurulumuna izin vermiyor. İnternete yayınlaman gerekiyor.
+
+En kolay ve ücretsiz yol:
+
+GitHub Pages ile Yayınla (5 dakika)
+1. GitHub hesabı aç github.com → Sign up
+
+2. Yeni repo oluştur
+
+"New repository" → isim: fatura-takip
+Public seç → Create
+3. Dosyaları yükle Repo sayfasında "uploading an existing file" linkine tıkla → 3 dosyayı sürükle bırak → Commit
+
+4. GitHub Pages'i aç Settings → Pages → Source: main branch → Save
+
+5. URL gelir
+
+https://kullaniciadin.github.io/fatura-takip
+Bu adrese telefondan girince "Ana Ekrana Ekle" butonu çıkar → uygulama gibi yüklenir ✅
+
+Telefonda Chrome (Android) veya Safari (iPhone) kullanıyorsan kurulum otomatik teklif edilir.
+
+GitHub hesabın var mı?
+
+Ekran Resmi 2026-06-06 02.31.56.png
+yapamadım ne eksik
+
+02:32
+Ekrana baktım, aslında neredeyse tamam! Tek sorun şu:
+
+Custom domain kutusuna yanlışlıkla bir şey yazılmış — kullaniciadin.github.io/fatura-takip yazıyor, orası boş olmalı.
+
+Çözüm (30 saniye)
+Custom domain kutusundaki metni sil (tamamen boşalt)
+Remove butonuna bas
+Sayfanın üstündeki kırmızı hata mesajı kaybolacak
+Zaten doğru ayarlar var:
+
+✅ Source: Deploy from a branch
+✅ Branch: main / (root)
+Bunları değiştirme, sadece Custom domain'i temizle. Birkaç dakika sonra sitenin adresi şu olacak:
+
+https://ardamiracseckin.github.io/fatura-takip
+Bu adrese telefondan girince PWA kurulum teklifi çıkacak.
+
+mac e nasıl indricem ya da masaüstüne sadece telefona mı iniyo
+
+02:33
+Mac'te PWA kurulumu Safari ile yapılıyor:
+
+Mac'te Kurulum (Safari)
+Safari'de https://ardamiracseckin.github.io/fatura-takip adresini aç
+Üst menüden File → Add to Dock tıkla
+"Add" de → uygulamanın ikonu Dock'a eklenir ✅
+Artık tıpkı normal bir uygulama gibi açılır, tam ekran çalışır.
+
+Chrome'da Olmaz mı?
+Mac'te Chrome'da adres çubuğunun sağında küçük bir ⊕ (yükle) ikonu çıkar, ona tıklayabilirsin. Ama Safari'deki kadar temiz entegre olmuyor.
+
+Özet:
+
+📱 iPhone → Safari → Paylaş → Ana Ekrana Ekle
+🖥 Mac → Safari → File → Add to Dock
+🤖 Android → Chrome → "Uygulamayı Yükle" bildirimi çıkar
+Önce Custom domain sorununu çöz, site yayına girsin, sonra dene!
+
+tamam her yerden ulaşabiliyorum siteye şimdi buna uygun güzel bir readme verir misin
+
+02:38
+
+Check docx skill
+Check docx skill
+README bir markdown dosyası olarak GitHub'a koyacaksın, direkt oluşturuyorum.
+
+
+Created a file, read a file
+Created a file, read a file
+Bu dosyayı GitHub'a şöyle ekle:
+
+Repo sayfasına git → Add file → Upload files
+README.md dosyasını sürükle bırak → Commit
+GitHub otomatik olarak repo ana sayfasında güzel bir şekilde gösterecek. İçindeki demo linkini de kendi kullanıcı adınla güncelledim zaten. 🎉
+
+
+Readme
+Document · MD 
+bu uygulama ii mi sence
+
+02:44
+Başlangıç seviyesi için gerçekten iyi bir proje! Dürüst değerlendireyim:
+
+İyi olan taraflar:
+
+Tek dosyayla çalışan, backend gerektirmeyen temiz bir mimari
+PWA desteği eklemişsin — çoğu başlangıç projesi bunu atlar
+OCR + kategori + grafik + export hepsini entegre etmişsin
+Gerçek bir sorunu çözüyor
+Zayıf taraflar:
+
+Veriler sadece localStorage'da — telefonu değiştirince her şey gidiyor
+OCR doğruluğu düşük faturalarda yetersiz kalıyor
+Güvenlik yok — herkes aynı linke girip aynı veriyi görüyor (şu an herkese ayrı localStorage olduğu için sorun yok ama yanlış anlaşılabilir)
+Türkçe karakter desteği OCR'da zaman zaman bozuluyor
+Portfolio için ne ifade eder?
+
+Birinin CV'sinde görsem şunu düşünürüm: "Bu kişi sadece tutorial takip etmiyor, sıfırdan bir şey üretiyor." Bu değerli.
+
+Ama şu an "hobi projesi" seviyesinde. Bir adım daha atsan "ciddi proje" olur:
+
+En büyük fark yaratan tek şey: verileri buluta taşımak (Firebase gibi ücretsiz bir seçenekle). Böylece cihazlar arası senkronizasyon olur ve uygulama gerçekten kullanılabilir hale gelir.
+
+Bunu eklemek ister misin?
+
+bunu eklemek isterim evet
+
+02:45
+Harika! Firebase kurulumuna geçmeden önce birkaç şeyi netleştirelim:
+
+Q: Kullanıcı girişi olsun mu?
+A: Evet, Google ile giriş yapsın (herkesin verisi ayrı)
+
+02:46
+Güzel seçim! Şimdi adım adım Firebase kurulumunu yapalım. Önce Firebase projesi oluşturman gerekiyor:
+
+1. Firebase Projesi Oluştur
+console.firebase.google.com adresine git
+"Add project" → proje adı: fatura-takip → Continue
+Google Analytics → kapatabilirsin → Create project
+2. Firestore Database Aç
+Sol menüden Firestore Database → Create database
+Production mode seç → Next
+Bölge: europe-west1 (en yakın) → Enable
+3. Authentication Aç
+Sol menüden Authentication → Get started
+Sign-in method → Google → Enable
+Project support email olarak kendi mailin → Save
+4. Web Uygulaması Ekle
+Sol üstte ⚙️ Project settings
+"Add app" → Web </> ikonuna tıkla
+App nickname: fatura-takip-web → Register app
+Çıkan firebaseConfig nesnesini kopyala, şöyle görünür:
+javascript
+const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "fatura-takip-xxx.firebaseapp.com",
+  projectId: "fatura-takip-xxx",
+  storageBucket: "fatura-takip-xxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123..."
+};
+5. Firestore Güvenlik Kuralı
+Sol menüden Firestore → Rules sekmesine tıkla, şunu yapıştır:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/expenses/{expenseId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+Publish butonuna bas.
+
+Bu 5 adımı tamamlayınca firebaseConfig nesnesini buraya yapıştır, kodu entegre edeyim! 🚀
+
+Ekran Resmi 2026-06-06 02.53.50.png
+hangisini seçeceğim
+
+02:54
+Standard edition seç (zaten seçili, mavi olan) → Next tıkla.
+
+Enterprise ücretli ve çok büyük ölçekli sistemler için, senin projen için Standard fazlasıyla yeterli.
+
+Ekran Resmi 2026-06-06 02.57.22.png
+buraya ne yazim
+
+02:57
+Public-facing name kısmına istediğin bir isim yaz, örneğin:
+
+Fatura Takip
+Support email zaten doğru seçili, değiştirmene gerek yok.
+
+Sonra sayfanın altındaki Continue veya Save butonuna bas.
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCAK75_rps_Tw6PhkKP4CbDfFv4M6dhEj0",
+  authDomain: "fatura-takip-3fea5.firebaseapp.com",
+  projectId: "fatura-takip-3fea5",
+  storageBucket: "fatura-takip-3fea5.firebasestorage.app",
+  messagingSenderId: "478343106558",
+  appId: "1:478343106558:web:13f8cc9f7adfcf11913aaf"
+};
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+Show more
+03:02
+Config geldi, şimdi kodu entegre ediyorum!
+
+
+Ran 3 commands, read a file
+Ran 3 commands, read a file
+Firebase entegrasyonu tamam! Şimdi son bir adım kaldı:
+
+GitHub'a Yükle ve Authorized Domain Ekle
+1. index.html'i GitHub'a yükle Repo sayfasında index.html dosyasına tıkla → ✏️ Edit → mevcut içeriği sil, yenisini yapıştır → Commit
+
+2. Firebase'e domain izni ver (önemli!) Firebase Console → Authentication → Settings → Authorized domains → Add domain → şunu ekle:
+
+ardamiracseckin.github.io
+Bu olmadan Google girişi çalışmaz.
+
+Bunları yapınca siteye girdiğinde artık "Google ile Giriş Yap" ekranı çıkacak. Giriş yapınca veriler Firestore'a kaydolacak, telefon/bilgisayar/tablet fark etmeksizin her yerden aynı veriler görünecek. 🎉
+
+
+Index
+Code · HTML 
+anlamadım githubımdan kontrol eder misin neyi hatalı yaptım
+
+03:26
+GitHub kullanıcı adın ardamiracseckin — repoya bakayım.
+
+
+Searched the web
+Searched the web
+Repo public değil veya isim farklı, arama sonuçlarında çıkmadı. Sana ekran görüntüsü ile bakmak daha kolay olur.
+
+Şu an tam olarak hangi adımda takıldığını söyler misin? Birkaç ihtimal var:
+
+A) index.html'i güncelleyemedin Repo'da eski index.html duruyor, yeni Firebase'li versiyonu yükleyemedin.
+
+B) GitHub Pages çalışmıyor Site ardamiracseckin.github.io/fatura-takip adresinde açılmıyor.
+
+C) Site açılıyor ama Google girişi çalışmıyor Sayfada hata var, giriş butonu çalışmıyor.
+
+D) Firebase authorized domain ekleyemedin Giriş popup'ı açılıyor ama hata veriyor.
+
+Ekran görüntüsü atabilirsen direkt görebilirim. Ya da şu anki durumu anlat, adım adım çözelim.
+
+
+
+
+
+
+
+Claude is AI and can make mistakes. Please double-check cited sources.
+
+
+raw
+Index · HTML
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -8,7 +544,7 @@
     <meta name="theme-color" content="#1a1a2e">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2652/2652234.png">
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-
+ 
     <style>
         :root {
             --bg: #0f0f1a;
@@ -25,7 +561,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 60px; }
-
+ 
         /* AUTH SCREEN */
         #authScreen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -44,7 +580,7 @@
         }
         .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,.4); }
         .google-btn img { width: 22px; height: 22px; }
-
+ 
         /* APP */
         #appScreen { display: none; }
         header { text-align: center; margin-bottom: 28px; animation: fadeDown .6s ease both; }
@@ -58,30 +594,30 @@
             border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer;
             font-family: 'DM Mono', monospace; transition: border-color .2s, color .2s; }
         .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
-
+ 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1100px; margin: 0 auto; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-
+ 
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; animation: fadeUp .5s ease both; }
         .card h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-
+ 
         .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 28px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; margin-bottom: 16px; }
         .upload-zone:hover { border-color: var(--accent); background: rgba(233,69,96,.05); }
         .upload-zone input { display: none; }
         .upload-zone .icon { font-size: 32px; margin-bottom: 8px; }
         .upload-zone p { font-size: 13px; color: var(--muted); }
-
+ 
         #preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; display: none; margin-bottom: 12px; border: 1px solid var(--border); }
         #loader { display: none; color: var(--yellow); font-size: 13px; margin: 10px 0; animation: pulse 1s infinite; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         #result { background: #0a0a14; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 11px; height: 80px; overflow-y: auto; color: var(--muted); white-space: pre-wrap; }
-
+ 
         .form-section { display: none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
         .form-section label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
         .form-section input, .form-section select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; margin-bottom: 12px; outline: none; transition: border-color .2s; }
         .form-section input:focus, .form-section select:focus { border-color: var(--accent); }
         .form-section select option { background: var(--surface2); }
-
+ 
         .btn { border: none; border-radius: 8px; padding: 10px 18px; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; cursor: pointer; transition: opacity .2s, transform .1s; }
         .btn:hover { opacity: .85; } .btn:active { transform: scale(.97); }
         .btn-primary { background: var(--accent); color: #fff; }
@@ -90,7 +626,7 @@
         .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
         .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
         .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
-
+ 
         .table-wrap { overflow-x: auto; margin-top: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { background: var(--surface2); color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; padding: 10px 8px; text-align: left; font-size: 11px; }
@@ -100,29 +636,29 @@
         .badge { background: var(--accent2); color: #8ab4f8; padding: 3px 8px; border-radius: 20px; font-size: 11px; white-space: nowrap; }
         .del-btn { background: none; border: 1px solid #3a2a3a; color: #e94560; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 12px; transition: background .15s; }
         .del-btn:hover { background: rgba(233,69,96,.15); }
-
+ 
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; max-width: 1100px; margin-left: auto; margin-right: auto; }
         .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
         .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
         .stat-card .value { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
         .stat-card .value.red { color: var(--accent); } .stat-card .value.green { color: var(--green); } .stat-card .value.yellow { color: var(--yellow); }
-
+ 
         .chart-container { position: relative; height: 270px; }
         .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
-
+ 
         /* Sync indicator */
         .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; }
         .sync-dot.syncing { background: var(--yellow); animation: pulse 1s infinite; }
-
+ 
         @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
     </style>
-
+ 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
+ 
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -130,7 +666,7 @@
             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy }
             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+ 
         const firebaseConfig = {
             apiKey: "AIzaSyCAK75_rps_Tw6PhkKP4CbDfFv4M6dhEj0",
             authDomain: "fatura-takip-3fea5.firebaseapp.com",
@@ -139,25 +675,25 @@
             messagingSenderId: "478343106558",
             appId: "1:478343106558:web:13f8cc9f7adfcf11913aaf"
         };
-
+ 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-
+ 
         let currentUser = null;
         let myChart = null;
-
+ 
         // ── Auth ─────────────────────────────────────────────────────────
         window.googleSignIn = async () => {
             try { await signInWithPopup(auth, provider); }
             catch (e) { alert('Giriş hatası: ' + e.message); }
         };
-
+ 
         window.doSignOut = async () => {
             await signOut(auth);
         };
-
+ 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -172,12 +708,12 @@
                 document.getElementById('appScreen').style.display = 'none';
             }
         });
-
+ 
         // ── Firestore ─────────────────────────────────────────────────────
         async function getColRef() {
             return collection(db, 'users', currentUser.uid, 'expenses');
         }
-
+ 
         async function loadRecords() {
             setSyncing(true);
             try {
@@ -191,11 +727,11 @@
             }
             setSyncing(false);
         }
-
+ 
         window.saveRecord = async () => {
             const tutar = parseFloat(document.getElementById('formAmount').value);
             if (!tutar || isNaN(tutar)) { alert('Tutar giriniz!'); return; }
-
+ 
             const record = {
                 firma: document.getElementById('formCompany').value || 'Bilinmiyor',
                 tarih: document.getElementById('formDate').value,
@@ -203,7 +739,7 @@
                 kategori: document.getElementById('formCategory').value,
                 createdAt: Date.now()
             };
-
+ 
             setSyncing(true);
             try {
                 const colRef = await getColRef();
@@ -217,7 +753,7 @@
             } catch(e) { alert('Kayıt hatası: ' + e.message); }
             setSyncing(false);
         };
-
+ 
         window.deleteRecord = async (id) => {
             if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
             setSyncing(true);
@@ -227,7 +763,7 @@
             } catch(e) { alert('Silme hatası: ' + e.message); }
             setSyncing(false);
         };
-
+ 
         window.clearLogs = async () => {
             if (!confirm('Tüm kayıtları silmek istediğinize emin misiniz?')) return;
             setSyncing(true);
@@ -239,7 +775,7 @@
             } catch(e) { alert('Hata: ' + e.message); }
             setSyncing(false);
         };
-
+ 
         // ── Dashboard render ──────────────────────────────────────────────
         function renderDashboard(records) {
             const total = records.reduce((s, r) => s + r.tutar, 0);
@@ -247,12 +783,12 @@
             document.getElementById('statTotal').textContent = '₺' + total.toFixed(2);
             document.getElementById('statCount').textContent = records.length;
             document.getElementById('statAvg').textContent = '₺' + avg.toFixed(2);
-
+ 
             const tbody = document.getElementById('logsBody');
             const empty = document.getElementById('emptyMsg');
             tbody.innerHTML = '';
             empty.style.display = records.length ? 'none' : 'block';
-
+ 
             records.forEach(r => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -263,17 +799,17 @@
                     <td><button class="del-btn" onclick="deleteRecord('${r.id}')">✕</button></td>`;
                 tbody.appendChild(tr);
             });
-
+ 
             // Excel export datası için global'e kaydet
             window._records = records;
-
+ 
             // Chart
             const totals = {};
             records.forEach(r => { totals[r.kategori] = (totals[r.kategori] || 0) + r.tutar; });
             const labels = Object.keys(totals);
             const values = Object.values(totals);
             const colors = ['#e94560','#06d6a0','#ffd166','#0f3460','#a8dadc','#457b9d','#e63946','#2a9d8f','#f4a261','#264653','#e9c46a'];
-
+ 
             const ctx = document.getElementById('expenseChart').getContext('2d');
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
@@ -287,7 +823,7 @@
                     tooltip: { callbacks: { label: ctx => ` ₺${ctx.parsed.toFixed(2)}` } } } }
             });
         }
-
+ 
         function setSyncing(s) {
             const dot = document.getElementById('syncDot');
             if (dot) dot.className = 'sync-dot' + (s ? ' syncing' : '');
@@ -295,7 +831,7 @@
     </script>
 </head>
 <body>
-
+ 
 <!-- GİRİŞ EKRANI -->
 <div id="authScreen">
     <div>
@@ -308,7 +844,7 @@
         </button>
     </div>
 </div>
-
+ 
 <!-- ANA UYGULAMA -->
 <div id="appScreen">
     <header>
@@ -320,13 +856,13 @@
             <button class="logout-btn" onclick="doSignOut()">Çıkış</button>
         </div>
     </header>
-
+ 
     <div class="stats-row">
         <div class="stat-card"><div class="label">Toplam Gider</div><div class="value red" id="statTotal">₺0</div></div>
         <div class="stat-card"><div class="label">Kayıt Sayısı</div><div class="value yellow" id="statCount">0</div></div>
         <div class="stat-card"><div class="label">Ortalama</div><div class="value green" id="statAvg">₺0</div></div>
     </div>
-
+ 
     <div class="grid">
         <div class="card">
             <h3>Yeni Fatura Ekle</h3>
@@ -338,7 +874,7 @@
             <img id="preview" alt="Önizleme">
             <div id="loader">⏳ OCR işlemi yapılıyor...</div>
             <div id="result">Görsel yüklenmedi.</div>
-
+ 
             <div class="form-section" id="formSection">
                 <label>Firma Adı</label>
                 <input type="text" id="formCompany" placeholder="Otomatik çıkarıldı">
@@ -363,7 +899,7 @@
                 <button class="btn btn-green" onclick="saveRecord()" style="width:100%">☁️ Buluta Kaydet</button>
             </div>
         </div>
-
+ 
         <div>
             <div class="card" style="margin-bottom:20px">
                 <h3>Kategori Dağılımı</h3>
@@ -387,7 +923,7 @@
         </div>
     </div>
 </div>
-
+ 
 <script>
 // ── Kategori tespiti ──────────────────────────────────────────────────────
 const CATEGORY_RULES = [
@@ -402,7 +938,7 @@ const CATEGORY_RULES = [
     { category: 'Teknoloji', keywords: ['teknosa','media markt','vatan','apple','samsung','bilgisayar','laptop','telefon'] },
     { category: 'Eğitim', keywords: ['okul','üniversite','kurs','dershane','udemy','kitap','kırtasiye'] },
 ];
-
+ 
 function detectCategory(text) {
     const lower = text.toLowerCase();
     for (const rule of CATEGORY_RULES) {
@@ -410,20 +946,20 @@ function detectCategory(text) {
     }
     return 'Diğer';
 }
-
+ 
 // ── OCR ───────────────────────────────────────────────────────────────────
 document.getElementById('invoiceUpload').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+ 
     const reader = new FileReader();
     reader.onload = ev => { const p = document.getElementById('preview'); p.src = ev.target.result; p.style.display = 'block'; };
     reader.readAsDataURL(file);
-
+ 
     document.getElementById('result').textContent = 'Metin okunuyor...';
     document.getElementById('loader').style.display = 'block';
     document.getElementById('formSection').style.display = 'none';
-
+ 
     try {
         const { data: { text } } = await Tesseract.recognize(file, 'tur+eng');
         document.getElementById('result').textContent = text || 'Metin bulunamadı.';
@@ -434,7 +970,7 @@ document.getElementById('invoiceUpload').addEventListener('change', async (e) =>
         document.getElementById('loader').style.display = 'none';
     }
 });
-
+ 
 function fillForm(text) {
     const dateMatch = text.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})\b/);
     if (dateMatch) {
@@ -443,14 +979,14 @@ function fillForm(text) {
     } else {
         document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
     }
-
+ 
     const amountMatch = text.match(/(?:TOPLAM|GENEL\s*TOPLAM|T[O0]PLAM)\s*[:\*]?\s*\*?\s*(\d[\d.,]+)/i)
                      || text.match(/(\d{1,6}[.,]\d{2})\s*(?:TL|₺|TRY)/i);
     document.getElementById('formAmount').value = amountMatch ? parseFloat(amountMatch[1].replace(',', '.')) : '';
-
+ 
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
     document.getElementById('formCompany').value = lines[0] || 'Bilinmiyor';
-
+ 
     const cat = detectCategory(text);
     const sel = document.getElementById('formCategory');
     for (let i = 0; i < sel.options.length; i++) {
@@ -458,7 +994,7 @@ function fillForm(text) {
     }
     document.getElementById('formSection').style.display = 'block';
 }
-
+ 
 // ── Export ────────────────────────────────────────────────────────────────
 function exportToExcel() {
     const records = window._records || [];
@@ -474,7 +1010,7 @@ function exportToExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'Giderler');
     XLSX.writeFile(wb, `Gider_Raporu_${new Date().toLocaleDateString('tr-TR').replace(/\./g,'-')}.xlsx`);
 }
-
+ 
 function exportToCSV() {
     const records = window._records || [];
     if (!records.length) { alert('Dışa aktarılacak veri bulunamadı!'); return; }
@@ -489,3 +1025,4 @@ function exportToCSV() {
 </script>
 </body>
 </html>
+ 
